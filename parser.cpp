@@ -28,6 +28,7 @@ using std::unique_ptr;
 using std::shared_ptr;
 using std::make_shared;
 using std::make_unique;
+using std::get;
 using namespace std::string_literals;
 
 parser::parser(string grammar) {
@@ -75,7 +76,7 @@ string parser::parse(vector<string> sen) {
 		++c;
 	}
 
-
+	/*
 	cerr << "Parsing: " << sentence[0];
 
 	for(int i = 1; i < sentence.size(); ++i) {
@@ -87,15 +88,30 @@ string parser::parse(vector<string> sen) {
 		cerr << "column " << i << endl;
 		cerr << columns[i] << endl;
 		
-	/*	
+		
 		cout << "toAttach = " << endl;
 		for(auto it : columns[i].toAttach) {
 			cout << it.first << ": " << *it.second << endl;
+		}	
+	}*/
+
+	shared_ptr<entry> bestParse;
+	
+	for(shared_ptr<entry> e : columns[n].entries) {
+		//if is finished root
+		if(e->dot == e->r.rhs.size() && e->r.lhs == "ROOT") {
+			//if smaller than bestParse
+			if(!bestParse || e->weight < bestParse->weight)
+				bestParse = e;
 		}
-	*/	
 	}
 
-	return "";
+	if(!bestParse)
+		return "NONE";
+
+//	cerr << "printing Tree" << endl;
+
+	return parseTree(n, bestParse);
 }
 
 void parser::process(shared_ptr<entry> e) {
@@ -152,3 +168,47 @@ void parser::attach(shared_ptr<entry> e) {
 	}
 }
 
+string parser::parseTree(int x, shared_ptr<entry> e) {
+
+//	cerr << "parseTree call on (" << x << ", " << (string) (*e) << ")" << endl;
+
+	stringstream ss;
+	if(e->dot == 0) {
+		ss << "(" << e->r.lhs;
+		return ss.str();
+	}
+	
+	string constituent = e->r.rhs[e->dot-1];
+
+//	cerr << "contituent = " << constituent << endl;
+
+	if(rules.find(constituent) == rules.end()) {
+		//unscan
+//		cerr << "unscanning " << constituent << endl;
+
+		shared_ptr<entry> last = make_shared<entry>(e->begin, e->r, e->dot - 1, e->weight);
+		ss << parseTree(x-1, last) << " " << constituent;	
+	}
+	else {
+		//unattach
+		//tuple of three entries
+		//to-attach, just-finished, and last
+//		cerr << "unattaching from column " << x << endl;
+//		cerr << columns[x] << endl;
+
+
+		auto t = columns[x].backPtrs[e->index()];
+		shared_ptr<entry> finished = get<1>(t);
+		shared_ptr<entry> last = get<2>(t);
+
+		int from = finished->begin;
+
+		ss << parseTree(from, last) << " " << parseTree(x, finished);
+
+	}
+
+	if(e->dot == e->r.rhs.size())
+		ss << ")";
+	return ss.str();	
+
+}
