@@ -45,7 +45,7 @@ int main(int argc, char** argv) {
 	string line;
 	getline(file, line);
 	while(file.good()) {
-		if(line != "") {
+		if(line != "" && line != " ") {
 			vector<string> sentence;
 			stringstream ss(line);
 			while(ss.good()) {
@@ -53,7 +53,9 @@ int main(int argc, char** argv) {
 				ss >> token;
 				sentence.push_back(token);
 			}
-			cout << p->parse(sentence) << endl;
+
+			if(sentence.size() != 0)
+				cout << p->parse(sentence) << endl;
 		}
 		getline(file, line);
 	}

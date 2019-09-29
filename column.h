@@ -23,7 +23,6 @@ struct column {
 	std::unordered_multimap<std::string, std::shared_ptr<entry>> toAttach;
 
 
-	//TODO Update this while parsing (on attach)
 	std::map<std::string, std::set<int>> marks;
 
 	//start attching from the lowest weight

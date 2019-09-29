@@ -70,30 +70,31 @@ string parser::parse(vector<string> sen) {
 		while(col.loc < col.entries.size()) {
 			while(col.hasNext())
 				process(col.next());
-			if(col.pending.size() != 0)	
+			while(col.pending.size() != 0 && col.loc == col.entries.size())	
 				col.moveMin();
 		}
 		++c;
 	}
-
+	
 	/*
-	cerr << "Parsing: " << sentence[0];
+	cout << "Parsing: " << sentence[0];
 
 	for(int i = 1; i < sentence.size(); ++i) {
-		cerr << " " << sentence[i];
+		cout << " " << sentence[i];
 	}
-	cerr << endl;
+	cout << endl;
 
 	for(int i = 0; i <= n; ++i) {
-		cerr << "column " << i << endl;
-		cerr << columns[i] << endl;
-		
-		
-		cout << "toAttach = " << endl;
-		for(auto it : columns[i].toAttach) {
-			cout << it.first << ": " << *it.second << endl;
-		}	
-	}*/
+		cout << "column " << i << endl;
+		cout << columns[i] << endl;
+	
+	//	cout << "toAttach = " << endl;
+	//	for(auto it : columns[i].toAttach) {
+	//		cout << it.first << ": " << *it.second << endl;
+	//	}
+	//	cout << endl;
+	}
+	*/
 
 	shared_ptr<entry> bestParse;
 	
@@ -106,12 +107,14 @@ string parser::parse(vector<string> sen) {
 		}
 	}
 
-	if(!bestParse)
-		return "NONE";
-
-//	cerr << "printing Tree" << endl;
-
-	return parseTree(n, bestParse);
+	if(!bestParse) {
+		return "NONE"s;
+	}
+	else {
+		stringstream ss;
+		ss << parseTree(n, bestParse) << " " << bestParse->weight;
+		return ss.str();
+	}
 }
 
 void parser::process(shared_ptr<entry> e) {
@@ -156,7 +159,7 @@ void parser::attach(shared_ptr<entry> e) {
 	int from = e->begin;
 	string constituent = e->r.lhs;
 
-	// Uncomment the following lines to get non-standard speedups
+	//Uncomment the following lines for non-standard speedup
 	/*
 	set<int>& marks = columns[from].marks[constituent];
 	if(marks.find(c) != marks.end())
