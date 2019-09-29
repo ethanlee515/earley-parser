@@ -156,10 +156,13 @@ void parser::attach(shared_ptr<entry> e) {
 	int from = e->begin;
 	string constituent = e->r.lhs;
 
+	// Uncomment the following lines to get non-standard speedups
+	/*
 	set<int>& marks = columns[from].marks[constituent];
 	if(marks.find(c) != marks.end())
 		return;
 	marks.insert(c);
+	*/
 
 	auto its = columns[from].toAttach.equal_range(constituent);
 
